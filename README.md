@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.jpg" alt="RC Visualizer Logo" width="120">
+</p>
+
 # RevenueCat Webhook Visualizer
 
 A real-time dashboard for visualizing RevenueCat webhook events. Transforms raw subscription data into a human-readable, chronological timeline for debugging and auditing.
