@@ -101,14 +101,14 @@ src/
 
 ---
 
-### Phase 4: The Logic Layer (Hooks & Services)
+### Phase 4: The Logic Layer (Hooks & Services) ✅
 *Objective: Abstract API complexity. This is the most critical part for code review.*
 
-10. **Create the Service**
+10. ~~**Create the Service**~~
     *   File: `src/features/timeline/api/timelineService.ts`
     *   Function `getEvents()`: Returns `supabase.from(...).select('*')`.
     *   *Angular Equivalent:* A standard `TimelineService`.
-11. **Create the "Smart" Hook**
+11. ~~**Create the "Smart" Hook**~~
     *   File: `src/features/timeline/hooks/useWebhookEvents.ts`
     *   **Step A:** Use `useQuery` to fetch the initial history.
     *   **Step B:** Use `useEffect` to subscribe to Supabase Realtime.
