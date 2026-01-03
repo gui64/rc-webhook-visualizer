@@ -59,7 +59,7 @@ npx shadcn@latest add <component>  # Add Shadcn component
 ### Environment Variables
 ```
 VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 WEBHOOK_SECRET=  # Used in Edge Function only
 ```
 
