@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.jpg" alt="RC Visualizer Logo" width="120">
+  <img src="logo.png" alt="RC Visualizer Logo" width="120">
 </p>
 
 # RevenueCat Webhook Visualizer
