@@ -88,13 +88,13 @@ src/
 
 ---
 
-### Phase 3: Infrastructure Layer
+### Phase 3: Infrastructure Layer ✅
 *Objective: Setup Global Providers and Singletons.*
 
-8.  **Setup Supabase Client**
+8.  ~~**Setup Supabase Client**~~
     *   Create `src/lib/supabase.ts`.
     *   Initialize `createClient` using `import.meta.env.VITE_SUPABASE_URL`.
-9.  **Configure React Query Provider**
+9.  ~~**Configure React Query Provider**~~
     *   In `src/main.tsx` (or `App.tsx`):
     *   Wrap your app with `<QueryClientProvider client={queryClient}>`.
     *   *Angular Equivalent:* Importing `HttpClientModule` in `AppModule`.
