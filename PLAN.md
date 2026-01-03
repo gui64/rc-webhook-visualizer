@@ -140,13 +140,13 @@ src/
 
 ---
 
-### Phase 6: The Backend (Edge Function)
+### Phase 6: The Backend (Edge Function) ✅
 *Objective: The actual ingestion point.*
 
-16. **Initialize Supabase Function**
+16. ~~**Initialize Supabase Function**~~
     *   `npx supabase functions new rc-webhook`
     *   (You may need to log in via CLI `npx supabase login`).
-17. **Implement Webhook Logic**
+17. ~~**Implement Webhook Logic**~~
     *   File: `supabase/functions/rc-webhook/index.ts`
     *   **Validation:** Check if `req.headers.get('Authorization')` matches your secret.
     *   **Parsing:** `const body = await req.json()`.
@@ -158,7 +158,7 @@ src/
           original_payload: body
         })
         ```
-18. **Deploy Function**
+18. ~~**Deploy Function**~~
     *   `npx supabase functions deploy rc-webhook`
 
 ---
