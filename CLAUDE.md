@@ -4,12 +4,13 @@
 
 A real-time dashboard for visualizing RevenueCat webhook events. Transforms raw subscription data into a human-readable, chronological timeline for debugging and auditing.
 
-**Status:** Project just started - base Vite React app with libraries installed.
+**Status:** Core implementation complete - Timeline feed, real-time updates, and webhook ingestion working.
 
 ## Tech Stack
 
-- **Frontend:** React (Vite) + TypeScript
-- **Styling:** Tailwind CSS + Shadcn/ui
+- **Frontend:** React 18 (Vite) + TypeScript
+- **Styling:** Tailwind CSS + Shadcn/ui (New York style, Slate color)
+- **State Management:** TanStack React Query
 - **Backend:** Supabase (PostgreSQL + Edge Functions + Realtime)
 - **Icons:** Lucide React
 - **Date Handling:** date-fns
@@ -19,99 +20,119 @@ A real-time dashboard for visualizing RevenueCat webhook events. Transforms raw 
 ```
 src/
 ├── components/
-│   ├── layout/             # Global layout (Header, PageShell)
+│   ├── layout/             # Global layout (Header.tsx)
 │   └── ui/                 # Shadcn components (auto-generated)
 ├── features/
 │   └── timeline/
 │       ├── api/            # timelineService.ts
 │       ├── components/     # TimelineFeed, TimelineItem, EventDetailSheet
 │       ├── hooks/          # useWebhookEvents.ts
-│       └── types/          # Feature-specific types
+│       └── types/          # index.ts (WebhookEvent interface)
 ├── lib/
-│   ├── supabase.ts         # Singleton Supabase client
+│   ├── supabase.ts         # Supabase client (supports mock mode)
+│   ├── mockSupabase.ts     # Mock client for development
+│   ├── mockData.ts         # Fake RevenueCat events
 │   └── utils.ts            # Shadcn cn() helper
 ├── App.tsx
 └── main.tsx
+
+supabase/
+└── functions/
+    └── rc-webhook/
+        └── index.ts        # Edge function for webhook ingestion
 ```
 
 ## Key Commands
 
 ```bash
-npm run dev          # Start dev server
+npm run dev          # Start with real Supabase
+npm run dev:mock     # Start with mock data (no Supabase needed)
 npm run build        # Production build
 npm run lint         # Run ESLint
 npx shadcn@latest add <component>  # Add Shadcn component
+npx supabase functions deploy rc-webhook  # Deploy edge function
 ```
 
 ## Architecture Guidelines
 
 ### Component Organization
 - **`components/ui/`**: Only Shadcn auto-generated components
-- **`components/layout/`**: App-wide layout components
+- **`components/layout/`**: App-wide layout components (Header)
 - **`features/*/components/`**: Feature-specific UI components
 
 ### Data Flow
-1. RevenueCat → Supabase Edge Function (validates webhook secret)
+1. RevenueCat → Supabase Edge Function (validates `Authorization: Bearer <secret>`)
 2. Edge Function → PostgreSQL `webhook_events` table
 3. Supabase Realtime → React frontend via websocket
-4. React state update → Timeline re-render
+4. `useWebhookEvents` hook injects new events directly into React Query cache
+5. Timeline re-renders with new event at top
 
 ### Environment Variables
+```bash
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-anon-key
+VITE_USE_MOCK=true|false  # Enable mock mode for development
+
+# Edge Function secrets (set via Supabase dashboard)
+WEBHOOK_SECRET=your-webhook-secret
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
-WEBHOOK_SECRET=  # Used in Edge Function only
-```
 
-## RevenueCat Event Types to Humanize
+## RevenueCat Event Types
 
-| Raw Event | Human Label |
-|-----------|-------------|
-| `INITIAL_PURCHASE` | New Subscription Started |
-| `RENEWAL` | Subscription Renewed |
-| `CANCELLATION` | Subscription Cancelled |
-| `UNCANCELLATION` | Cancellation Reversed |
-| `EXPIRATION` | Subscription Expired |
-| `BILLING_ISSUE` | Payment Failed |
-| `PRODUCT_CHANGE` | Plan Changed |
-| `REFUND` | Refund Issued |
+| Raw Event | Human Label | Icon | Badge Color |
+|-----------|-------------|------|-------------|
+| `INITIAL_PURCHASE` | Initial Purchase | CreditCard | Green |
+| `RENEWAL` | Renewal | RefreshCw | Blue |
+| `CANCELLATION` | Cancellation | XCircle | Red |
+| `BILLING_ISSUE` | Billing Issue | AlertCircle | Yellow |
+| `PRODUCT_CHANGE` | Product Change | DollarSign | Orange |
+| `SUBSCRIBER_ALIAS` | Subscriber Alias | UserPlus | Purple |
 
-## Database Schema (To Implement)
+## Database Schema
 
 ```sql
 CREATE TABLE webhook_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
   app_user_id TEXT NOT NULL,
-  event_type TEXT NOT NULL,
-  event_timestamp TIMESTAMPTZ NOT NULL,
-  payload JSONB NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT now()
+  type TEXT NOT NULL,
+  original_payload JSONB NOT NULL
 );
 
-CREATE INDEX idx_webhook_events_user ON webhook_events(app_user_id);
-CREATE INDEX idx_webhook_events_timestamp ON webhook_events(event_timestamp DESC);
+-- Enable realtime
+ALTER PUBLICATION supabase_realtime ADD TABLE webhook_events;
 ```
 
-## Core Features to Build
+## Core Features
 
-1. **Timeline Feed** - Chronological list of events with humanized labels
-2. **Event Detail Sheet** - Side drawer showing full JSON payload
-3. **User History Filter** - Filter timeline by `app_user_id`
-4. **Empty State** - "Waiting for Webhooks..." with setup instructions
-5. **Real-time Updates** - New events slide into top of timeline
+- [x] **Timeline Feed** - Chronological list with loading skeletons
+- [x] **Event Detail Sheet** - Side drawer showing full JSON payload
+- [x] **Real-time Updates** - New events appear instantly via Supabase Realtime
+- [x] **Empty State** - "Waiting for events..." message
+- [x] **Mock Mode** - Development without Supabase connection
+- [ ] **User History Filter** - Filter timeline by `app_user_id`
 
 ## Coding Conventions
 
 - Use TypeScript strict mode
 - Prefer named exports
 - Use `cn()` from `lib/utils` for conditional classes
-- Keep components small and focused
+- Keep components small and focused ("dumb" components)
 - Colocate feature logic in `features/` directory
+- Derive filtered state in render, not via `useEffect`
 - No authentication required (internal tool)
 
-## UI Notes
+## Testing Webhook Locally
 
-- Timeline uses left-border line to connect events
-- Lucide icons distinguish event types (CreditCard, XCircle, etc.)
-- Status badges for event states (Success, Refunded, Cancelled)
-- Desktop-first but tablet-readable
+```bash
+curl -X POST https://your-project.supabase.co/functions/v1/rc-webhook \
+  -H "Authorization: Bearer YOUR_WEBHOOK_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event": {
+      "type": "INITIAL_PURCHASE",
+      "app_user_id": "test_user_123"
+    }
+  }'
+```
