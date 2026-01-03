@@ -63,15 +63,15 @@ src/
 
 ---
 
-### Phase 2: Domain Modeling & Database
+### Phase 2: Domain Modeling & Database ✅
 *Objective: Define the data contract before writing UI code.*
 
-5.  **Create the Feature Directory**
+5.  ~~**Create the Feature Directory**~~
     *   `mkdir -p src/features/timeline/{api,components,hooks,types}`
-6.  **Define TypeScript Interface**
+6.  ~~**Define TypeScript Interface**~~
     *   Create `src/features/timeline/types/index.ts`.
     *   Export `interface WebhookEvent` matching your PRD (id, type, app_user_id, created_at, original_payload).
-7.  **Supabase Table Setup**
+7.  ~~**Supabase Table Setup**~~
     *   Go to Supabase Dashboard > SQL Editor.
     *   Run the schema:
         ```sql
